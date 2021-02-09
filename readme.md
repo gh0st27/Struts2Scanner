@@ -23,7 +23,7 @@ Exploit function
 backward compatibility to python
  
 
-<h3>Setup</h3>
+<h3>Setup Environment</h3>
 
 8080/str:
 
