@@ -9,8 +9,6 @@
 	Future Release :cve-2013-2251 => Prefix parameter OGNL Injection : 2.0.0 to 2.3.15 (action & redirect & redirectaction is not properly sanitize)
 
 
-Not Inlcuded:
-cve-2019-0233 => DOS
 
 <h3>Feature Completed:</h3>  
 
