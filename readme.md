@@ -14,14 +14,14 @@ cve-2019-0233 => DOS
 
 <h3>Feature Completed:</h3>  
 
-check if endpoint is vulnerable or not.  	
+check if endpoint is vulnerable or not.  
 proxy support.  
 cookie support.  
 vulnerable parameter - check Query String & POST Body
 
 <h3>Working on:</h3>
 
-Exploit function
+Exploit function  
 backward compatibility to python
  
 
