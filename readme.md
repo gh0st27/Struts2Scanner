@@ -10,32 +10,19 @@
 
 
 
-<h3>Feature Completed:</h3>  
 
-check if endpoint is vulnerable or not.  
-proxy support.  
-cookie support.  
-vulnerable parameter - check Query String & POST Body
 
-<h3>Working on:</h3>
+# Requirements
+* Python3
+* Check requirements.txt file
 
-Exploit function  
-backward compatibility to python
- 
+# Installation Steps
+pip3 install -r requirements.txt
 
-<h3>Setup Environment</h3>
 
-8080/str:
+# Legal Disclaimer
+This project is made for educational and ethical testing purposes only. Usage of struts-pwn for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program.
 
-cve-2017-5638
-cve-2017-9791
-cve-2013-2251
-cve-2019-0234
 
-docker: 8088
-
-cve-2018-11776
-
-docker: 8090
-
-cve-2020-17530
+# License
+The project is licensed under MIT License.
