@@ -1,4 +1,4 @@
-# StrutsExploiter
+# Struts2Scanner
 	
 	cve-2020-17530	=> Forced OGNL Evalution : 2.0.0 to 2.5.25
 	cve-2019-0230  => Double OGNL Evalution : 2.0.0 to 2.5.20
