@@ -12,7 +12,7 @@ Struts2Scanner is a vulnerability scanner to find out if a target endpoint is vu
 
 ## How to use
 
-
+![Capture](/Capture.png)
 ## Requirements
 * Python3
 * Check requirements.txt file
@@ -22,7 +22,7 @@ Struts2Scanner is a vulnerability scanner to find out if a target endpoint is vu
 
 
 ## Legal Disclaimer
-This project is made for educational and ethical testing purposes only. Usage of struts-pwn for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program.
+This project is made for educational and ethical testing purposes only. Usage of Struts2Scanner for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program.
 
 
 ### License
