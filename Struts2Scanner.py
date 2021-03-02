@@ -214,21 +214,21 @@ def check(target, ns_target, path, raw_data, dict_param, timeout, headers, allow
     del ttarget
     ttarget = target
     if raw_data is not None:
-#        print('Checking Jarkarta Multipart parser OGNL Injection on Content Type header')
+#        print('Checking Jakarta Multipart parser OGNL Injection on Content Type header')
         payload, r_headers = do_Post(ttarget, dict_data, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects=False)
         if 'strutsExploiter' in r_headers.keys():
             if r_headers['strutsExploiter'] == 'gh0st27':
-                print(bracket, "Target is vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
+                print(bracket, "Target is vulnerable to Jakarta Multipart parser OGNL Injection on Content Type header")
         else:
-            print(bracket_err, "Target is not vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
+            print(bracket_err, "Target is not vulnerable to Jakarta Multipart parser OGNL Injection on Content Type header")
     else:
-#        print('Checking Jarkarta Multipart parser OGNL Injection on Content Type header')
+#        print('Checking Jakarta Multipart parser OGNL Injection on Content Type header')
         payload, r_headers = do_Get(ttarget, dict_param, dict_cookies, proxies_listener, timeout, hheaders, verify, allow_redirects=False)
         if 'strutsExploiter' in r_headers.keys():
             if r_headers['strutsExploiter'] == 'gh0st27':
-                print(bracket, "Target is vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
+                print(bracket, "Target is vulnerable to Jakarta Multipart parser OGNL Injection on Content Type header")
             else:
-                print(bracket_err, "Target is not vulnerable to Jarkarta Multipart parser OGNL Injection on Content Type header")
+                print(bracket_err, "Target is not vulnerable to Jakarta Multipart parser OGNL Injection on Content Type header")
         hheaders.clear()
 
     # Checking for Jakarta Multipart parser OGNL Injection - Content disposition header
