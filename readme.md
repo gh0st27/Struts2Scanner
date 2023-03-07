@@ -1,6 +1,6 @@
 # Struts2Scanner
 
-Struts2Scanner is a vulnerability scanner to find out if a target endpoint is vulnerable to Remote Code Execution. Currently it checks against following vulnerabilities.
+Struts2Scanner is a vulnerability scanner to find out wheather a target endpoint is vulnerable to Remote Code Execution. Currently it checks against following vulnerabilities.
 
 * cve-2020-17530
 * cve-2019-0230
